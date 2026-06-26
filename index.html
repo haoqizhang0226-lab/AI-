@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 反馈助手 Web 端 Demo</title>
+    <style>
+        :root {
+            --brand: #4a5cf7;
+            --secondary: #7e57ff;
+            --bg: #f8f9fa;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --card: #ffffff;
+            --blue-low: #eef4ff;
+            --indigo-low: #f2eeff;
+            --radius: 8px;
+            --shadow: 0 24px 60px rgba(26, 39, 94, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #eef2ff 0%, #f8f9fa 40%, #eef2f7 100%);
+            font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+            color: var(--text);
+        }
+
+        textarea,
+        input,
+        select,
+        button {
+            font: inherit;
+        }
+
+        textarea,
+        input,
+        select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+            outline: none;
+        }
+
+        input,
+        select {
+            height: 42px;
+            padding: 0 12px;
+        }
+
+        textarea {
+            padding: 10px 12px;
+            line-height: 1.7;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(74, 92, 247, 0.12);
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+        }
+
+        .page {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px 16px 40px;
+        }
+
+        .page-head {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .page-head h1 {
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.3;
+        }
+
+        .page-head p {
+            margin: 10px 0 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .mode-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            margin-top: 18px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .mode-chip {
+            min-width: 104px;
+            height: 38px;
+            padding: 0 18px;
+            border-radius: 999px;
+            background: transparent;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .mode-chip.active {
+            background: linear-gradient(90deg, var(--brand) 0%, var(--secondary) 100%);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(74, 92, 247, 0.24);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .note-card,
+        .panel,
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .note-card {
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+        }
+
+        .note-card h3 {
+            margin: 0 0 12px;
+            font-size: 14px;
+        }
+
+        .note-card p {
+            margin: 0 0 10px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #475569;
+        }
+
+        .note-group {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .note-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .note-input,
+        .note-textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+        }
+
+        .note-input {
+            height: 40px;
+            padding: 0 12px;
+            margin-bottom: 12px;
+        }
+
+        .note-textarea {
+            min-height: 120px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .admin-shell {
+            position: relative;
+            min-height: 860px;
+            background: #f3f6fb;
+            border: 1px solid #e5ebf4;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        .preview-stage {
+            display: flex;
+            justify-content: center;
+        }
+
+        .preview-stage.mode-web .admin-shell {
+            width: 100%;
+        }
+
+        .preview-stage.mode-app {
+            padding: 8px 0;
+        }
+
+        .preview-stage.mode-app .admin-shell {
+            width: min(430px, 100%);
+            min-height: 820px;
+            border: 10px solid #0f172a;
+            border-radius: 36px;
+            background: var(--bg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .preview-stage.mode-app .admin-shell::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 24px;
+            background: #0f172a;
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 5;
+        }
+
+        .preview-stage.mode-app .admin-header {
+            padding: 38px 18px 14px;
+        }
+
+        .preview-stage.mode-app .admin-title {
+            font-size: 18px;
+        }
+
+        .preview-stage.mode-app .admin-subtitle {
+            font-size: 12px;
+        }
+
+        .preview-stage.mode-app .admin-body {
+            padding: 16px;
+        }
+
+        .preview-stage.mode-app .admin-grid,
+        .preview-stage.mode-app .form-grid,
+        .preview-stage.mode-app .readonly-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .preview-stage.mode-app .assistant-shell {
+            width: 100%;
+        }
+
+        .preview-stage.mode-app .overlay {
+            position: absolute;
+        }
+
+        .preview-stage.mode-app .summary-box {
+            min-height: 180px;
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 20px 24px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .admin-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .admin-subtitle {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .admin-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: #eef4ff;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .admin-body {
+            padding: 24px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1.08fr 0.92fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .admin-column {
+            display: grid;
+            gap: 20px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 16px;
+        }
+
+        .card {
+            padding: 16px;
+        }
+
+        .card-title {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .summary-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .gradient-btn {
+            background: linear-gradient(90deg, var(--brand) 0%, var(--secondary) 100%);
+            color: #fff;
+            border-radius: var(--radius);
+            font-weight: 600;
+        }
+
+        .small-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .large-btn {
+            width: 100%;
+            height: 48px;
+            font-size: 14px;
+        }
+
+        .outline-btn {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            border-radius: var(--radius);
+            font-weight: 600;
+        }
+
+        .footer-action {
+            border-top: 1px solid var(--border);
+            background: #fff;
+            padding: 16px;
+        }
+
+        .summary-box {
+            width: 100%;
+            min-height: 240px;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(4px);
+        }
+
+        .assistant-shell {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: min(760px, 100vw);
+            height: 100%;
+            background: var(--bg);
+            box-shadow: var(--shadow);
+            border-left: 1px solid var(--border);
+            overflow: hidden;
+            animation: slideFadeIn 260ms ease;
+        }
+
+        .assistant-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+        }
+
+        .assistant-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .assistant-header p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .assistant-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sparkle-icon,
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: #eef2ff;
+            color: var(--brand);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .info-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: #dbeafe;
+            font-size: 14px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 18px;
+        }
+
+        .tip-banner {
+            border: 1px solid #dbeafe;
+            background: var(--blue-low);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .tip-banner h4,
+        .confirm-banner h4 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .tip-banner p,
+        .confirm-banner p {
+            margin: 6px 0 0;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #475569;
+        }
+
+        .confirm-banner {
+            border: 1px solid #ddd6fe;
+            background: var(--indigo-low);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+
+        .readonly-row {
+            margin-bottom: 14px;
+        }
+
+        .readonly-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .readonly-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .readonly-value {
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .assistant-body {
+            height: calc(100% - 81px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .assistant-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        .preview-box {
+            position: relative;
+            min-height: 360px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 18px 72px 18px 18px;
+            font-size: 14px;
+            line-height: 1.95;
+            white-space: pre-wrap;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .dual-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .span-2 {
+            grid-column: 1 / -1;
+        }
+
+        .readonly-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 18px;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .section-card h3 {
+            margin: 0 0 14px;
+            font-size: 16px;
+        }
+
+        .checklist-bar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px 18px;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #f8fafc;
+            margin-bottom: 18px;
+        }
+
+        .checklist-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .check-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .check-item input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: var(--brand);
+        }
+
+        .task-editor {
+            margin-bottom: 16px;
+        }
+
+        .task-editor:last-child {
+            margin-bottom: 0;
+        }
+
+        .text-counter {
+            margin-top: 8px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .loading-shell {
+            display: none;
+            padding: 32px 24px;
+        }
+
+        .loading-shell.active {
+            display: block;
+        }
+
+        .skeleton {
+            height: 14px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #edf2f7 25%, #f8fafc 40%, #edf2f7 65%);
+            background-size: 240px 100%;
+            animation: shimmer 1.2s infinite linear;
+            margin-bottom: 14px;
+        }
+
+        .skeleton.large {
+            height: 108px;
+            border-radius: 12px;
+        }
+
+        @keyframes shimmer {
+            from {
+                background-position: -240px 0;
+            }
+            to {
+                background-position: 240px 0;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.92);
+            color: #fff;
+            font-size: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes slideFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-grid,
+            .form-grid,
+            .readonly-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .assistant-shell {
+                width: 100vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="page-head">
+            <h1 id="pageTitle">AI 反馈助手双端 Demo</h1>
+            <p id="pageDescription">支持在同一页面切换 APP 端与 Web 端展示模式，复用同一套表单数据与 AI 反馈助手交互。</p>
+            <div class="mode-switch">
+                <button id="switchApp" class="mode-chip" type="button">APP 端</button>
+                <button id="switchWeb" class="mode-chip active" type="button">Web 端</button>
+            </div>
+        </div>
+
+        <div class="layout">
+            <div class="note-card">
+                <h3>设计说明</h3>
+                <p>1. 主表单中的任务安排和各项完成情况会在打开 AI 助手时实时抓取到只读卡片中。</p>
+                <p>2. “重新生成”会返回完善信息页，但保留已选状态和补充文本。</p>
+                <p>3. “采纳到正文”会将 AI 草稿写回主表单中的“总体督学反馈”。</p>
+                <p>4. Demo 使用渐变主按钮、8px 圆角、淡入滑动切换，贴近 handoff 规范。</p>
+
+                <div class="note-group">
+                    <h3>工作流配置</h3>
+                    <label class="note-label" for="workflowPageUrl">工作流页面链接</label>
+                    <input id="workflowPageUrl" class="note-input" value="https://www.coze.cn/work_flow?space_id=7441851541797601330&workflow_id=7654473326509932559&force_stay=1">
+
+                    <label class="note-label" for="workflowEndpoint">接口地址</label>
+                    <input id="workflowEndpoint" class="note-input" value="https://api.coze.cn/v1/workflow/run">
+
+                    <label class="note-label" for="workflowId">workflow_id</label>
+                    <input id="workflowId" class="note-input" value="7654473326509932559">
+
+                    <label class="note-label" for="spaceId">space_id</label>
+                    <input id="spaceId" class="note-input" value="7441851541797601330">
+
+                    <label class="note-label" for="workflowToken">Bearer Token</label>
+                    <input id="workflowToken" class="note-input" type="password" value="pat_9qcowLtsY9En5W1cNXFuSSlqdQOo6aRWHcoeETA7ZAl2ndCSAtGALkhAc6V0ZPQh" placeholder="请输入 PAT / Access Token">
+
+                    <label class="note-label" for="parameterKey">parameters 字段名</label>
+                    <input id="parameterKey" class="note-input" value="input">
+
+                    <div class="note-label">当前状态</div>
+                    <div id="requestStatus" class="status-chip">尚未调用</div>
+                </div>
+
+                <div class="note-group">
+                    <h3>请求预览</h3>
+                    <textarea id="requestPreview" class="note-textarea" readonly></textarea>
+                </div>
+
+                <div class="note-group">
+                    <h3>返回预览</h3>
+                    <textarea id="responsePreview" class="note-textarea" readonly placeholder="调用后展示原始返回"></textarea>
+                </div>
+            </div>
+
+            <div id="previewStage" class="preview-stage mode-web">
+            <div class="admin-shell">
+                <div class="admin-header">
+                    <div>
+                        <h2 class="admin-title">督学反馈后台表单</h2>
+                        <div id="shellSubtitle" class="admin-subtitle">AI 通过右侧侧边面板辅助老师完善信息并生成总体督学反馈草稿。</div>
+                    </div>
+                    <div class="admin-toolbar">
+                        <div id="modeBadge" class="badge">Web 端 Drawer Demo</div>
+                    </div>
+                </div>
+
+                <div class="admin-body">
+                    <div class="admin-grid">
+                        <div class="admin-column">
+                            <div class="section-card">
+                                <h3>学生基础信息</h3>
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label for="studentName">学生姓名</label>
+                                        <input id="studentName" value="Emily Chen">
+                                    </div>
+                                    <div class="field">
+                                        <label for="supervisorDate">督学时间</label>
+                                        <input id="supervisorDate" value="2026-06-20 10:00-15:00">
+                                    </div>
+                                    <div class="field span-2">
+                                        <label for="inspectContent">任务安排</label>
+                                        <textarea id="inspectContent" rows="4">Advanced Calculus Ch. 4
+Physics Lab Report</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-card">
+                                <div class="summary-head">
+                                    <h3 style="margin:0;">总体督学反馈</h3>
+                                    <button id="openAssistantBtn" class="gradient-btn small-btn">AI 生成</button>
+                                </div>
+                                <textarea id="overallFeedback" class="summary-box" rows="8" placeholder="这里显示最终采纳后的总体督学反馈"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="admin-column">
+                            <div class="section-card">
+                                <h3>任务完成情况</h3>
+                                <div class="checklist-bar">
+                                    <div class="checklist-label">完成情况：</div>
+                                    <label class="check-item" for="checkWordRecitation">
+                                        <input id="checkWordRecitation" type="checkbox" data-task="wordRecitation" checked>
+                                        <span>单词背诵情况</span>
+                                    </label>
+                                    <label class="check-item" for="checkHomeworkCompletion">
+                                        <input id="checkHomeworkCompletion" type="checkbox" data-task="homeworkCompletion">
+                                        <span>作业完成情况</span>
+                                    </label>
+                                    <label class="check-item" for="checkQuestionPractice">
+                                        <input id="checkQuestionPractice" type="checkbox" data-task="questionPractice">
+                                        <span>刷题情况</span>
+                                    </label>
+                                    <label class="check-item" for="checkNotesAndMistakes">
+                                        <input id="checkNotesAndMistakes" type="checkbox" data-task="notesAndMistakes">
+                                        <span>笔记/错题整理情况</span>
+                                    </label>
+                                    <label class="check-item" for="checkOtherTasks">
+                                        <input id="checkOtherTasks" type="checkbox" data-task="otherTasks">
+                                        <span>其他学习任务</span>
+                                    </label>
+                                </div>
+                                <div id="taskEditorGroup">
+                                    <div class="field task-editor" data-task-editor="wordRecitation">
+                                        <label for="wordRecitation">单词背诵情况</label>
+                                        <textarea id="wordRecitation" rows="4" placeholder="请输入单词背诵情况">函数定义和常见公式记忆整体较扎实，少量细节表达仍需强化。</textarea>
+                                    </div>
+                                    <div class="field task-editor hidden" data-task-editor="homeworkCompletion">
+                                        <label for="homeworkCompletion">作业完成情况</label>
+                                        <textarea id="homeworkCompletion" rows="4" placeholder="请输入作业完成情况">Advanced Calculus Chapter 4 完成度约 80%，关键题型基本覆盖。</textarea>
+                                    </div>
+                                    <div class="field task-editor hidden" data-task-editor="questionPractice">
+                                        <label for="questionPractice">刷题情况</label>
+                                        <textarea id="questionPractice" rows="4" placeholder="请输入刷题情况">物理实验报告框架已完成，但分析部分还可以更细致一些。</textarea>
+                                    </div>
+                                    <div class="field task-editor hidden" data-task-editor="notesAndMistakes">
+                                        <label for="notesAndMistakes">笔记/错题整理情况</label>
+                                        <textarea id="notesAndMistakes" rows="4" placeholder="请输入笔记/错题整理情况">已记录部分错题，但整理逻辑还不够系统。</textarea>
+                                    </div>
+                                    <div class="field task-editor hidden" data-task-editor="otherTasks">
+                                        <label for="otherTasks">其他学习任务</label>
+                                        <textarea id="otherTasks" rows="3" placeholder="请输入其他学习任务">无</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="assistantOverlay" class="overlay hidden">
+                    <div class="assistant-shell">
+                        <div class="assistant-header">
+                            <div class="assistant-title">
+                                <div class="sparkle-icon">✦</div>
+                                <div>
+                                    <h2>AI反馈助手</h2>
+                                    <p id="assistantSubTitle">信息完善阶段</p>
+                                </div>
+                            </div>
+                            <button id="closeAssistantBtn" class="icon-btn" type="button">×</button>
+                        </div>
+
+                        <div id="assistantFormScreen" class="assistant-body">
+                            <div class="assistant-scroll">
+                                <div class="stack">
+                                    <div class="tip-banner">
+                                        <div class="info-icon">i</div>
+                                        <div>
+                                            <h4>AI将根据以下内容生成反馈：</h4>
+                                            <p>为了生成更准确的反馈，请补充以下信息后再提交AI生成</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-title">获取到的基本信息</div>
+                                        <div class="readonly-grid">
+                                            <div class="readonly-row">
+                                                <div class="readonly-label">学生姓名</div>
+                                                <div id="roStudentName" class="readonly-value">--</div>
+                                            </div>
+                                            <div class="readonly-row">
+                                                <div class="readonly-label">督学时间</div>
+                                                <div id="roSupervisorDate" class="readonly-value">--</div>
+                                            </div>
+                                            <div class="readonly-row span-2">
+                                                <div class="readonly-label">任务安排</div>
+                                                <div id="roInspectContent" class="readonly-value">--</div>
+                                            </div>
+                                            <div class="readonly-row span-2">
+                                                <div class="readonly-label">完成情况</div>
+                                                <div id="roCompletionOverview" class="readonly-value">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-title">完善信息</div>
+                                        <div class="form-grid">
+                                            <div class="field">
+                                                <label for="arrivalTime">学生到达时间</label>
+                                                <input id="arrivalTime" type="time" value="10:25">
+                                            </div>
+                                            <div class="field">
+                                                <label for="leaveTime">学生离开时间</label>
+                                                <input id="leaveTime" type="time" value="15:00">
+                                            </div>
+                                            <div class="field">
+                                                <label for="phoneStatus">手机上交情况</label>
+                                                <select id="phoneStatus">
+                                                    <option value="">请选择手机上交情况</option>
+                                                    <option>主动上交</option>
+                                                    <option>提醒后上交</option>
+                                                    <option>拒绝上交</option>
+                                                    <option>中途使用</option>
+                                                </select>
+                                            </div>
+                                            <div class="field">
+                                                <label for="learningStatus">学习状态</label>
+                                                <select id="learningStatus">
+                                                    <option value="">请选择学习状态</option>
+                                                    <option>专注认真</option>
+                                                    <option>效率较高</option>
+                                                    <option>偶尔提醒</option>
+                                                    <option>分心较多</option>
+                                                </select>
+                                            </div>
+                                            <div class="field">
+                                                <label for="cooperationStatus">配合度</label>
+                                                <select id="cooperationStatus">
+                                                    <option value="">请选择配合度</option>
+                                                    <option>主动性强</option>
+                                                    <option>配合较好</option>
+                                                    <option>提醒后能调整</option>
+                                                    <option>需要加强</option>
+                                                </select>
+                                            </div>
+                                            <div class="field">
+                                                <label for="studyLocation">督学地点</label>
+                                                <select id="studyLocation">
+                                                    <option value="">请选择督学地点</option>
+                                                    <option>自习区</option>
+                                                    <option>教室</option>
+                                                    <option>无固定区域</option>
+                                                </select>
+                                            </div>
+                                            <div class="field">
+                                                <label for="taskCompletionStatus">任务完成情况</label>
+                                                <select id="taskCompletionStatus">
+                                                    <option value="">请选择任务完成情况</option>
+                                                    <option>已提交</option>
+                                                    <option>未提交</option>
+                                                    <option>暂未同步</option>
+                                                </select>
+                                            </div>
+                                            <div class="field">
+                                                <label for="cameraStatus">线上督学出镜情况</label>
+                                                <select id="cameraStatus">
+                                                    <option value="">请选择线上督学出镜情况</option>
+                                                    <option>配合出镜</option>
+                                                    <option>拒绝出镜</option>
+                                                    <option>无法出镜</option>
+                                                </select>
+                                            </div>
+                                            <div class="field">
+                                                <label for="onlineStatus">在线情况</label>
+                                                <select id="onlineStatus">
+                                                    <option value="">请选择在线情况</option>
+                                                    <option>全程在线</option>
+                                                    <option>偶尔掉线</option>
+                                                    <option>经常掉线</option>
+                                                    <option>经常不在线</option>
+                                                </select>
+                                            </div>
+                                            <div class="field span-2">
+                                                <label for="teacherSupplement">补充（选填）</label>
+                                                <textarea id="teacherSupplement" maxlength="1000" rows="5" placeholder="例如：这节课孩子很认真..."></textarea>
+                                                <div id="supplementCounter" class="text-counter">0/1000</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="footer-action">
+                                <button id="generateBtn" class="gradient-btn large-btn" type="button">生成督学反馈</button>
+                            </div>
+                        </div>
+
+                        <div id="assistantPreviewScreen" class="assistant-body hidden">
+                            <div class="assistant-scroll" style="padding-bottom:96px;">
+                                <div class="stack">
+                                    <div class="confirm-banner">
+                                        <h4>反馈内容确认：</h4>
+                                        <p>请核对并修改AI生成的内容后，再点击【采纳到正文】，将内容填充到督学反馈</p>
+                                    </div>
+
+                                    <div class="card" style="position:relative;">
+                                        <div class="card-title">总体督学反馈</div>
+                                        <div id="previewContent" class="preview-box"></div>
+                                        <button id="copyBtn" class="copy-btn" type="button">复制</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="footer-action">
+                                <div class="dual-actions">
+                                    <button id="regenerateBtn" class="outline-btn large-btn" type="button">重新生成</button>
+                                    <button id="acceptBtn" class="gradient-btn large-btn" type="button">采纳到正文</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="drawerLoading" class="loading-shell">
+                            <div class="skeleton" style="width:48%;"></div>
+                            <div class="skeleton" style="width:100%;"></div>
+                            <div class="skeleton" style="width:92%;"></div>
+                            <div class="skeleton large"></div>
+                            <div class="skeleton" style="width:88%;"></div>
+                            <div class="skeleton" style="width:96%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="toast" class="toast hidden"></div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var state = {
+                viewMode: 'web',
+                assistantOpen: false,
+                assistantStep: 'form',
+                isGenerating: false,
+                generatedContent: '',
+                toastTimer: null,
+                lastResponse: ''
+            };
+
+            function $(id) {
+                return document.getElementById(id);
+            }
+
+            function applyViewMode(mode) {
+                state.viewMode = mode;
+                $('previewStage').classList.toggle('mode-web', mode === 'web');
+                $('previewStage').classList.toggle('mode-app', mode === 'app');
+                $('switchWeb').classList.toggle('active', mode === 'web');
+                $('switchApp').classList.toggle('active', mode === 'app');
+                $('modeBadge').textContent = mode === 'web' ? 'Web 端 Drawer Demo' : 'APP 端 Drawer Demo';
+                $('pageTitle').textContent = mode === 'web' ? 'AI 反馈助手 Web 端 Demo' : 'AI 反馈助手 APP 端 Demo';
+                $('pageDescription').textContent = mode === 'web'
+                    ? '当前为后台管理系统桌面端抽屉式交互，保留原表单结构，并通过右侧 Drawer 辅助老师完善信息和生成总体督学反馈。'
+                    : '当前为移动端预览形态，使用同一套表单数据和 AI 助手逻辑，便于对照 APP 端展示与交互效果。';
+                $('shellSubtitle').textContent = mode === 'web'
+                    ? 'AI 通过右侧侧边面板辅助老师完善信息并生成总体督学反馈草稿。'
+                    : 'AI 通过移动端样式抽屉辅助老师完善信息并生成总体督学反馈草稿。';
+            }
+
+            function getCheckedTaskKeys() {
+                return Array.prototype.slice.call(document.querySelectorAll('[data-task]:checked')).map(function (node) {
+                    return node.getAttribute('data-task');
+                });
+            }
+
+            function isTaskChecked(taskKey) {
+                return getCheckedTaskKeys().indexOf(taskKey) > -1;
+            }
+
+            function syncTaskEditors() {
+                Array.prototype.slice.call(document.querySelectorAll('[data-task-editor]')).forEach(function (node) {
+                    var taskKey = node.getAttribute('data-task-editor');
+                    node.classList.toggle('hidden', !isTaskChecked(taskKey));
+                });
+            }
+
+            function getFormData() {
+                return {
+                    studentName: $('studentName').value.trim(),
+                    supervisorDate: $('supervisorDate').value.trim(),
+                    inspectContent: $('inspectContent').value.trim(),
+                    wordRecitation: $('wordRecitation').value.trim(),
+                    homeworkCompletion: $('homeworkCompletion').value.trim(),
+                    questionPractice: $('questionPractice').value.trim(),
+                    notesAndMistakes: $('notesAndMistakes').value.trim(),
+                    otherTasks: $('otherTasks').value.trim()
+                };
+            }
+
+            function getSupplementData() {
+                return {
+                    arrivalTime: $('arrivalTime').value.trim(),
+                    leaveTime: $('leaveTime').value.trim(),
+                    phoneStatus: $('phoneStatus').value.trim(),
+                    studyLocation: $('studyLocation').value.trim(),
+                    taskCompletionStatus: $('taskCompletionStatus').value.trim(),
+                    cameraStatus: $('cameraStatus').value.trim(),
+                    learningStatus: $('learningStatus').value.trim(),
+                    cooperationStatus: $('cooperationStatus').value.trim(),
+                    onlineStatus: $('onlineStatus').value.trim(),
+                    teacherSupplement: $('teacherSupplement').value.trim()
+                };
+            }
+
+            function getWorkflowConfig() {
+                return {
+                    endpoint: $('workflowEndpoint').value.trim(),
+                    workflowId: $('workflowId').value.trim(),
+                    token: $('workflowToken').value.trim(),
+                    parameterKey: $('parameterKey').value.trim() || 'input'
+                };
+            }
+
+            function buildCompletionText(form) {
+                return [
+                    isTaskChecked('wordRecitation') && form.wordRecitation ? '单词背诵：' + form.wordRecitation : '',
+                    isTaskChecked('homeworkCompletion') && form.homeworkCompletion ? '作业完成：' + form.homeworkCompletion : '',
+                    isTaskChecked('questionPractice') && form.questionPractice ? '刷题情况：' + form.questionPractice : '',
+                    isTaskChecked('notesAndMistakes') && form.notesAndMistakes ? '笔记/错题整理：' + form.notesAndMistakes : '',
+                    isTaskChecked('otherTasks') && form.otherTasks ? '其他学习任务：' + form.otherTasks : ''
+                ].filter(Boolean).join('\n');
+            }
+
+            function composeFeedback(form, supplement) {
+                var taskBits = [
+                    isTaskChecked('wordRecitation') && form.wordRecitation ? '单词背诵方面，' + form.wordRecitation : '',
+                    isTaskChecked('homeworkCompletion') && form.homeworkCompletion ? '作业完成情况上，' + form.homeworkCompletion : '',
+                    isTaskChecked('questionPractice') && form.questionPractice ? '刷题表现上，' + form.questionPractice : '',
+                    isTaskChecked('notesAndMistakes') && form.notesAndMistakes ? '笔记与错题整理方面，' + form.notesAndMistakes : '',
+                    isTaskChecked('otherTasks') && form.otherTasks && form.otherTasks !== '无' ? '另外，' + form.otherTasks : ''
+                ].filter(Boolean);
+
+                var timeBits = [
+                    supplement.arrivalTime ? '学生于' + supplement.arrivalTime + '到达' : '',
+                    supplement.leaveTime ? supplement.leaveTime + '离开' : ''
+                ].filter(Boolean).join('，');
+
+                var introBits = [
+                    timeBits,
+                    supplement.phoneStatus,
+                    supplement.studyLocation ? '督学地点为' + supplement.studyLocation : '',
+                    supplement.taskCompletionStatus ? '任务状态为' + supplement.taskCompletionStatus : '',
+                    supplement.cameraStatus,
+                    supplement.onlineStatus
+                ].filter(Boolean).join('，');
+
+                var learningBits = [
+                    supplement.learningStatus ? '整体学习状态表现为' + supplement.learningStatus : '',
+                    supplement.cooperationStatus ? '课堂配合度上属于' + supplement.cooperationStatus : ''
+                ].filter(Boolean).join('，');
+
+                var custom = supplement.teacherSupplement ? '另外，' + supplement.teacherSupplement : '';
+
+                return form.studentName +
+                    '本次督学整体状态较稳定，' +
+                    (introBits || '到场及课堂准备情况较为规范') +
+                    '，课堂过程中' +
+                    (learningBits || '整体配合较好') +
+                    '。从任务推进来看，' +
+                    (taskBits.length ? taskBits.join('；') : '整体任务推进较为顺畅') +
+                    '。整体来看，当前学习节奏和执行力是值得肯定的，但在细节落实、方法稳定性和检查意识上仍有继续打磨的空间。建议后续继续结合本次任务中的薄弱环节做针对性复盘，先把易错点和关键知识点及时归纳，再通过小块练习巩固效果，这样提升会更扎实一些。' +
+                    custom +
+                    (custom ? '继续保持现在认真投入的状态呀，期待你后续在细节和稳定性上有更进一步的提升哦！' : '继续保持现在的投入状态呀，期待下次看到你更稳定、更从容的表现哦！');
+            }
+
+            function showToast(message) {
+                var toast = $('toast');
+                toast.textContent = message;
+                toast.classList.remove('hidden');
+                clearTimeout(state.toastTimer);
+                state.toastTimer = setTimeout(function () {
+                    toast.classList.add('hidden');
+                }, 1800);
+            }
+
+            function updateSupplementCounter() {
+                var value = $('teacherSupplement').value || '';
+                $('supplementCounter').textContent = value.length + '/1000';
+            }
+
+            function syncReadonlyInfo() {
+                var form = getFormData();
+                $('roStudentName').textContent = form.studentName || '--';
+                $('roSupervisorDate').textContent = form.supervisorDate || '--';
+                $('roInspectContent').textContent = form.inspectContent || '--';
+                $('roCompletionOverview').textContent = buildCompletionText(form) || '暂无已填写完成情况';
+                updateRequestPreview();
+            }
+
+            function buildWorkflowPayload() {
+                var form = getFormData();
+                var supplement = getSupplementData();
+                var config = getWorkflowConfig();
+                return {
+                    workflow_id: config.workflowId,
+                    parameters: {}
+                };
+            }
+
+            function getStudentPayload() {
+                var form = getFormData();
+                var supplement = getSupplementData();
+                return {
+                    studentName: form.studentName,
+                    supervisorDate: form.supervisorDate,
+                    inspectContent: form.inspectContent,
+                    completeList: {
+                        wordRecitation: isTaskChecked('wordRecitation') ? form.wordRecitation : '',
+                        homeworkCompletion: isTaskChecked('homeworkCompletion') ? form.homeworkCompletion : '',
+                        questionPractice: isTaskChecked('questionPractice') ? form.questionPractice : '',
+                        notesAndMistakes: isTaskChecked('notesAndMistakes') ? form.notesAndMistakes : '',
+                        otherTasks: isTaskChecked('otherTasks') ? form.otherTasks : ''
+                    },
+                    supplement: {
+                        arrivalTime: supplement.arrivalTime,
+                        leaveTime: supplement.leaveTime,
+                        phoneStatus: supplement.phoneStatus,
+                        studyLocation: supplement.studyLocation,
+                        taskCompletionStatus: supplement.taskCompletionStatus,
+                        cameraStatus: supplement.cameraStatus,
+                        onlineStatus: supplement.onlineStatus,
+                        learningStatus: supplement.learningStatus,
+                        cooperationStatus: supplement.cooperationStatus,
+                        teacherSupplement: supplement.teacherSupplement
+                    }
+                };
+            }
+
+            function updateRequestPreview() {
+                var config = getWorkflowConfig();
+                var body = {
+                    workflow_id: config.workflowId,
+                    parameters: {}
+                };
+                body.parameters[config.parameterKey] = JSON.stringify(getStudentPayload());
+                $('requestPreview').value = JSON.stringify(body, null, 2);
+            }
+
+            function setRequestStatus(text, type) {
+                var el = $('requestStatus');
+                el.textContent = text;
+                if (type === 'error') {
+                    el.style.background = '#fef2f2';
+                    el.style.color = '#dc2626';
+                } else if (type === 'loading') {
+                    el.style.background = '#eff6ff';
+                    el.style.color = '#2563eb';
+                } else if (type === 'success') {
+                    el.style.background = '#ecfdf5';
+                    el.style.color = '#059669';
+                } else {
+                    el.style.background = '#eef2ff';
+                    el.style.color = '#4a5cf7';
+                }
+            }
+
+            function tryParseJson(value) {
+                if (typeof value !== 'string') return value;
+                try {
+                    return JSON.parse(value);
+                } catch (error) {
+                    return value;
+                }
+            }
+
+            function normalizeFeedbackText(text) {
+                if (typeof text !== 'string') return '';
+                var trimmed = text.trim();
+                if (!trimmed) return '';
+
+                trimmed = trimmed
+                    .replace(/^```json\s*/i, '')
+                    .replace(/^```\s*/i, '')
+                    .replace(/\s*```$/i, '')
+                    .trim();
+
+                var reparsed = tryParseJson(trimmed);
+                if (reparsed !== trimmed) {
+                    var extractedFromString = extractOverallFeedback(reparsed);
+                    if (extractedFromString) return extractedFromString;
+                }
+
+                var match = trimmed.match(/["']overallFeedback["']\s*:\s*["']([\s\S]*?)["']\s*\}?$/);
+                if (match && match[1]) {
+                    return match[1].replace(/\\"/g, '"').trim();
+                }
+
+                return trimmed;
+            }
+
+            function extractOverallFeedback(value) {
+                if (!value) return '';
+
+                var parsed = tryParseJson(value);
+
+                if (typeof parsed === 'string') {
+                    return normalizeFeedbackText(parsed);
+                }
+
+                if (Array.isArray(parsed)) {
+                    for (var i = 0; i < parsed.length; i += 1) {
+                        var foundInArray = extractOverallFeedback(parsed[i]);
+                        if (foundInArray) return foundInArray;
+                    }
+                    return '';
+                }
+
+                if (typeof parsed === 'object') {
+                    if (typeof parsed.overallFeedback === 'string' && parsed.overallFeedback.trim()) {
+                        return normalizeFeedbackText(parsed.overallFeedback);
+                    }
+                    if (typeof parsed.data !== 'undefined') {
+                        var foundInData = extractOverallFeedback(parsed.data);
+                        if (foundInData) return foundInData;
+                    }
+                    if (typeof parsed.output !== 'undefined') {
+                        var foundInOutput = extractOverallFeedback(parsed.output);
+                        if (foundInOutput) return foundInOutput;
+                    }
+                    for (var key in parsed) {
+                        if (Object.prototype.hasOwnProperty.call(parsed, key)) {
+                            var found = extractOverallFeedback(parsed[key]);
+                            if (found) return found;
+                        }
+                    }
+                }
+
+                return '';
+            }
+
+            function reportDebug(hypothesisId, msg, data) {
+                // #region debug-point A:coze-workflow-call
+                fetch('http://127.0.0.1:7777/event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sessionId: 'coze-workflow-call',
+                        runId: 'pre-fix',
+                        hypothesisId: hypothesisId,
+                        location: 'index.html:reportDebug',
+                        msg: '[DEBUG] ' + msg,
+                        data: data || {},
+                        ts: Date.now()
+                    })
+                }).catch(function () {});
+                // #endregion
+            }
+
+            function renderAssistantStep() {
+                var isLoading = state.isGenerating;
+                $('assistantFormScreen').classList.toggle('hidden', state.assistantStep !== 'form' || isLoading);
+                $('assistantPreviewScreen').classList.toggle('hidden', state.assistantStep !== 'preview' || isLoading);
+                $('drawerLoading').classList.toggle('active', isLoading);
+                $('assistantSubTitle').textContent = isLoading ? '生成中' : (state.assistantStep === 'form' ? '信息完善阶段' : '内容生成阶段');
+                $('previewContent').textContent = state.generatedContent;
+            }
+
+            function openAssistant() {
+                syncReadonlyInfo();
+                state.assistantOpen = true;
+                state.assistantStep = 'form';
+                $('assistantOverlay').classList.remove('hidden');
+                renderAssistantStep();
+            }
+
+            function closeAssistant() {
+                state.assistantOpen = false;
+                state.assistantStep = 'form';
+                $('assistantOverlay').classList.add('hidden');
+                renderAssistantStep();
+            }
+
+            async function handleGenerate() {
+                if (state.isGenerating) return;
+                var config = getWorkflowConfig();
+                if (!config.endpoint) {
+                    showToast('请先填写接口地址');
+                    return;
+                }
+                if (!config.workflowId) {
+                    showToast('请先填写 workflow_id');
+                    return;
+                }
+                if (!config.token) {
+                    showToast('请先填写 Bearer Token');
+                    return;
+                }
+
+                state.isGenerating = true;
+                var button = $('generateBtn');
+                button.textContent = '生成中...';
+                button.disabled = true;
+                setRequestStatus('调用中...', 'loading');
+                updateRequestPreview();
+                renderAssistantStep();
+
+                try {
+                    var body = {
+                        workflow_id: config.workflowId,
+                        parameters: {}
+                    };
+                    body.parameters[config.parameterKey] = JSON.stringify(getStudentPayload());
+
+                    // #region debug-point A:before-request
+                    reportDebug('A', 'about to call workflow', {
+                        endpoint: config.endpoint,
+                        workflowId: config.workflowId,
+                        parameterKey: config.parameterKey,
+                        inputType: typeof body.parameters[config.parameterKey],
+                        inputPreview: String(body.parameters[config.parameterKey]).slice(0, 300)
+                    });
+                    // #endregion
+
+                    var response = await fetch(config.endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + config.token
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    var text = await response.text();
+                    $('responsePreview').value = text;
+                    var responseData = tryParseJson(text);
+
+                    // #region debug-point B:after-response
+                    reportDebug('B', 'workflow response received', {
+                        ok: response.ok,
+                        status: response.status,
+                        code: responseData && responseData.code,
+                        msg: responseData && responseData.msg,
+                        textPreview: String(text).slice(0, 500)
+                    });
+                    // #endregion
+
+                    if (!response.ok) {
+                        throw new Error('接口请求失败：HTTP ' + response.status);
+                    }
+
+                    if (responseData && typeof responseData.code !== 'undefined' && Number(responseData.code) !== 0) {
+                        throw new Error(responseData.msg || '工作流返回失败');
+                    }
+
+                    var feedback = extractOverallFeedback(responseData);
+                    if (!feedback) {
+                        throw new Error('未从工作流返回中解析到 overallFeedback');
+                    }
+
+                    state.generatedContent = feedback;
+                    state.assistantStep = 'preview';
+                    setRequestStatus('调用成功', 'success');
+                    renderAssistantStep();
+                } catch (error) {
+                    console.error(error);
+                    // #region debug-point C:request-error
+                    reportDebug('C', 'workflow request failed', {
+                        message: error && error.message ? error.message : 'unknown error',
+                        name: error && error.name ? error.name : '',
+                        stack: error && error.stack ? String(error.stack).slice(0, 500) : ''
+                    });
+                    // #endregion
+                    setRequestStatus('调用失败', 'error');
+                    $('responsePreview').value = (error && error.message) ? error.message : '调用失败，请稍后重试';
+                    showToast((error && error.message) ? error.message : '调用失败，请稍后重试');
+                } finally {
+                    state.isGenerating = false;
+                    button.textContent = '生成督学反馈';
+                    button.disabled = false;
+                    renderAssistantStep();
+                }
+            }
+
+            function handleCopy() {
+                var text = state.generatedContent || '';
+                if (!text) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function () {
+                        showToast('已复制反馈内容');
+                    }).catch(function () {
+                        showToast('复制失败，请手动复制');
+                    });
+                } else {
+                    showToast('当前环境不支持自动复制');
+                }
+            }
+
+            function handleAccept() {
+                $('overallFeedback').value = state.generatedContent;
+                closeAssistant();
+                showToast('已采纳到正文');
+            }
+
+            $('openAssistantBtn').addEventListener('click', openAssistant);
+            $('closeAssistantBtn').addEventListener('click', closeAssistant);
+            $('switchApp').addEventListener('click', function () {
+                applyViewMode('app');
+            });
+            $('switchWeb').addEventListener('click', function () {
+                applyViewMode('web');
+            });
+            $('generateBtn').addEventListener('click', handleGenerate);
+            $('regenerateBtn').addEventListener('click', function () {
+                state.assistantStep = 'form';
+                renderAssistantStep();
+            });
+            $('copyBtn').addEventListener('click', handleCopy);
+            $('acceptBtn').addEventListener('click', handleAccept);
+            $('workflowEndpoint').addEventListener('input', updateRequestPreview);
+            $('workflowId').addEventListener('input', updateRequestPreview);
+            $('parameterKey').addEventListener('input', updateRequestPreview);
+            $('studentName').addEventListener('input', updateRequestPreview);
+            $('supervisorDate').addEventListener('input', updateRequestPreview);
+            $('inspectContent').addEventListener('input', updateRequestPreview);
+            $('wordRecitation').addEventListener('input', updateRequestPreview);
+            $('homeworkCompletion').addEventListener('input', updateRequestPreview);
+            $('questionPractice').addEventListener('input', updateRequestPreview);
+            $('notesAndMistakes').addEventListener('input', updateRequestPreview);
+            $('otherTasks').addEventListener('input', updateRequestPreview);
+            Array.prototype.slice.call(document.querySelectorAll('[data-task]')).forEach(function (node) {
+                node.addEventListener('change', function () {
+                    syncTaskEditors();
+                    updateRequestPreview();
+                });
+            });
+            $('arrivalTime').addEventListener('input', updateRequestPreview);
+            $('leaveTime').addEventListener('input', updateRequestPreview);
+            $('phoneStatus').addEventListener('change', updateRequestPreview);
+            $('studyLocation').addEventListener('change', updateRequestPreview);
+            $('taskCompletionStatus').addEventListener('change', updateRequestPreview);
+            $('cameraStatus').addEventListener('change', updateRequestPreview);
+            $('onlineStatus').addEventListener('change', updateRequestPreview);
+            $('learningStatus').addEventListener('change', updateRequestPreview);
+            $('cooperationStatus').addEventListener('change', updateRequestPreview);
+            $('teacherSupplement').addEventListener('input', updateRequestPreview);
+            $('teacherSupplement').addEventListener('input', updateSupplementCounter);
+            syncTaskEditors();
+            updateSupplementCounter();
+            applyViewMode('web');
+            updateRequestPreview();
+        })();
+    </script>
+</body>
+</html>
