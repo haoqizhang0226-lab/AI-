@@ -513,6 +513,12 @@
             background: #f1f5f9;
             color: #475569;
             font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
         }
 
         .tip-banner {
@@ -605,6 +611,13 @@
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
         }
 
+        .copy-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            background: #f8fafc;
+        }
+
         .btn-icon {
             display: inline-flex;
             align-items: center;
@@ -669,6 +682,22 @@
 
         .text-btn.collapsed .collapse-icon {
             transform: rotate(-90deg);
+        }
+
+        .collapsed-summary {
+            display: none;
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px dashed #dbe3f0;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #475569;
+        }
+
+        .collapsed-summary.active {
+            display: block;
         }
 
         .form-grid {
@@ -753,6 +782,8 @@
             align-items: center;
             justify-content: center;
             padding: 32px 24px;
+            background: rgba(248, 250, 252, 0.82);
+            backdrop-filter: blur(3px);
         }
 
         .loading-shell.active {
@@ -763,6 +794,12 @@
             display: grid;
             justify-items: center;
             gap: 20px;
+            min-width: 320px;
+            padding: 28px 32px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #e6ebf5;
+            box-shadow: 0 24px 56px rgba(15, 23, 42, 0.10);
         }
 
         .loading-ring {
@@ -780,6 +817,7 @@
             color: #334155;
             text-align: center;
         }
+
 
         .toast {
             position: fixed;
@@ -1027,6 +1065,7 @@ Physics Lab Report</textarea>
                                                 <div id="roCompletionOverview" class="readonly-value">--</div>
                                             </div>
                                         </div>
+                                        <div id="basicInfoSummary" class="collapsed-summary"></div>
                                     </div>
 
                                     <div class="card">
@@ -1331,6 +1370,13 @@ Physics Lab Report</textarea>
                 $('basicInfoContent').classList.toggle('hidden', collapsed);
                 $('toggleBasicInfoBtn').classList.toggle('collapsed', collapsed);
                 $('basicInfoToggleText').textContent = collapsed ? '展开' : '收起';
+                var summaryParts = [
+                    $('roStudentName').textContent && $('roStudentName').textContent !== '--' ? '学生：' + $('roStudentName').textContent : '',
+                    $('roSupervisorDate').textContent && $('roSupervisorDate').textContent !== '--' ? '督学时间：' + $('roSupervisorDate').textContent : '',
+                    $('roCompletionOverview').textContent && $('roCompletionOverview').textContent !== '暂无已填写完成情况' ? '完成情况已同步' : '暂无完成情况'
+                ].filter(Boolean);
+                $('basicInfoSummary').textContent = summaryParts.join('  |  ');
+                $('basicInfoSummary').classList.toggle('active', collapsed);
             }
 
             function buildWorkflowPayload() {
@@ -1500,7 +1546,9 @@ Physics Lab Report</textarea>
                 $('assistantPreviewScreen').classList.toggle('hidden', state.assistantStep !== 'preview' || isLoading);
                 $('drawerLoading').classList.toggle('active', isLoading);
                 $('assistantSubTitle').textContent = isLoading ? 'AI正在生成督学反馈' : (state.assistantStep === 'form' ? '信息完善阶段' : '内容生成阶段');
-                $('previewContent').textContent = state.generatedContent;
+                $('previewContent').textContent = state.generatedContent || '生成完成后，将在这里展示总体督学反馈正文。';
+                $('previewContent').style.color = state.generatedContent ? '#0f172a' : '#94a3b8';
+                $('copyBtn').disabled = !state.generatedContent;
                 renderBasicInfoCollapse();
             }
 
