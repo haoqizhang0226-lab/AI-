@@ -1372,8 +1372,7 @@ Physics Lab Report</textarea>
                 $('basicInfoToggleText').textContent = collapsed ? '展开' : '收起';
                 var summaryParts = [
                     $('roStudentName').textContent && $('roStudentName').textContent !== '--' ? '学生：' + $('roStudentName').textContent : '',
-                    $('roSupervisorDate').textContent && $('roSupervisorDate').textContent !== '--' ? '督学时间：' + $('roSupervisorDate').textContent : '',
-                    $('roCompletionOverview').textContent && $('roCompletionOverview').textContent !== '暂无已填写完成情况' ? '完成情况已同步' : '暂无完成情况'
+                    $('roSupervisorDate').textContent && $('roSupervisorDate').textContent !== '--' ? '督学时间：' + $('roSupervisorDate').textContent : ''
                 ].filter(Boolean);
                 $('basicInfoSummary').textContent = summaryParts.join('  |  ');
                 $('basicInfoSummary').classList.toggle('active', collapsed);
