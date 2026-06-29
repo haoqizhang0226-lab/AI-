@@ -113,7 +113,7 @@
             min-width: 104px;
             height: 38px;
             padding: 0 18px;
-            border-radius: 999px;
+            border-radius: 16px;
             background: transparent;
             color: #475569;
             font-size: 14px;
@@ -385,10 +385,21 @@
         }
 
         .gradient-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             background: linear-gradient(90deg, var(--brand) 0%, var(--secondary) 100%);
             color: #fff;
-            border-radius: var(--radius);
+            border-radius: 16px;
             font-weight: 600;
+            box-shadow: 0 12px 26px rgba(74, 92, 247, 0.22);
+        }
+
+        .gradient-btn[disabled],
+        .outline-btn[disabled] {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
 
         .small-btn {
@@ -403,10 +414,14 @@
         }
 
         .outline-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             background: #fff;
             border: 1px solid #cbd5e1;
             color: #334155;
-            border-radius: var(--radius);
+            border-radius: 16px;
             font-weight: 600;
         }
 
@@ -565,26 +580,23 @@
         }
 
         .preview-box {
-            position: relative;
             min-height: 360px;
             border-radius: 12px;
             background: #f8fafc;
             border: 1px solid var(--border);
-            padding: 18px 72px 18px 18px;
+            padding: 18px;
             font-size: 14px;
             line-height: 1.95;
             white-space: pre-wrap;
         }
 
         .copy-btn {
-            position: absolute;
-            right: 16px;
-            bottom: 16px;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             padding: 8px 12px;
-            border-radius: 999px;
+            border-radius: 14px;
             border: 1px solid var(--border);
             background: #fff;
             color: #334155;
@@ -593,10 +605,70 @@
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
         }
 
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-title-row .card-title {
+            margin: 0;
+        }
+
+        .btn-spinner {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #fff;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .dual-actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+        }
+
+        .text-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            background: transparent;
+            color: var(--brand);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .collapse-icon {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .text-btn.collapsed .collapse-icon {
+            transform: rotate(-90deg);
         }
 
         .form-grid {
@@ -677,34 +749,36 @@
 
         .loading-shell {
             display: none;
+            height: calc(100% - 81px);
+            align-items: center;
+            justify-content: center;
             padding: 32px 24px;
         }
 
         .loading-shell.active {
-            display: block;
+            display: flex;
         }
 
-        .skeleton {
-            height: 14px;
+        .loading-center {
+            display: grid;
+            justify-items: center;
+            gap: 20px;
+        }
+
+        .loading-ring {
+            width: 56px;
+            height: 56px;
             border-radius: 999px;
-            background: linear-gradient(90deg, #edf2f7 25%, #f8fafc 40%, #edf2f7 65%);
-            background-size: 240px 100%;
-            animation: shimmer 1.2s infinite linear;
-            margin-bottom: 14px;
+            background: conic-gradient(from 180deg, #e7f0ff 0deg, #7eb5ff 90deg, #2d7ef7 220deg, #8e28ff 320deg, #e7f0ff 360deg);
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+            animation: spin 0.95s linear infinite;
         }
 
-        .skeleton.large {
-            height: 108px;
-            border-radius: 12px;
-        }
-
-        @keyframes shimmer {
-            from {
-                background-position: -240px 0;
-            }
-            to {
-                background-position: 240px 0;
-            }
+        .loading-copy {
+            font-size: 15px;
+            color: #334155;
+            text-align: center;
         }
 
         .toast {
@@ -759,8 +833,8 @@
             <h1 id="pageTitle">AI 反馈助手双端 Demo</h1>
             <p id="pageDescription">支持在同一页面切换 APP 端与 Web 端展示模式，复用同一套表单数据与 AI 反馈助手交互。</p>
             <div class="mode-switch">
-                <button id="switchApp" class="mode-chip" type="button">APP 端</button>
-                <button id="switchWeb" class="mode-chip active" type="button">Web 端</button>
+                <button id="switchApp" class="mode-chip" type="button"><span class="btn-icon">📱</span><span>APP 端</span></button>
+                <button id="switchWeb" class="mode-chip active" type="button"><span class="btn-icon">🖥</span><span>Web 端</span></button>
             </div>
         </div>
 
@@ -844,7 +918,7 @@ Physics Lab Report</textarea>
                             <div class="section-card">
                                 <div class="summary-head">
                                     <h3 style="margin:0;">总体督学反馈</h3>
-                                    <button id="openAssistantBtn" class="gradient-btn small-btn">AI生成反馈</button>
+                                    <button id="openAssistantBtn" class="gradient-btn small-btn"><span class="btn-icon">✦</span><span>AI生成反馈</span></button>
                                 </div>
                                 <textarea id="overallFeedback" class="summary-box" rows="8" placeholder="这里显示最终采纳后的总体督学反馈"></textarea>
                             </div>
@@ -928,8 +1002,14 @@ Physics Lab Report</textarea>
                                     </div>
 
                                     <div class="card">
-                                        <div class="card-title">获取到的基本信息</div>
-                                        <div class="readonly-grid">
+                                        <div class="card-title-row">
+                                            <div class="card-title">获取到的基本信息</div>
+                                            <button id="toggleBasicInfoBtn" class="text-btn" type="button">
+                                                <span id="basicInfoToggleText">收起</span>
+                                                <span class="collapse-icon">▾</span>
+                                            </button>
+                                        </div>
+                                        <div id="basicInfoContent" class="readonly-grid">
                                             <div class="readonly-row">
                                                 <div class="readonly-label">学生姓名</div>
                                                 <div id="roStudentName" class="readonly-value">--</div>
@@ -1038,7 +1118,7 @@ Physics Lab Report</textarea>
                             </div>
 
                             <div class="footer-action">
-                                <button id="generateBtn" class="gradient-btn large-btn" type="button">生成督学反馈</button>
+                                <button id="generateBtn" class="gradient-btn large-btn" type="button"><span id="generateBtnIcon" class="btn-icon">⚡</span><span id="generateBtnText">生成督学反馈</span></button>
                             </div>
                         </div>
 
@@ -1050,29 +1130,29 @@ Physics Lab Report</textarea>
                                         <p>请核对并修改AI生成的内容后，再点击【采纳到正文】，将内容填充到督学反馈</p>
                                     </div>
 
-                                    <div class="card" style="position:relative;">
-                                        <div class="card-title">总体督学反馈</div>
+                                    <div class="card">
+                                        <div class="card-title-row">
+                                            <div class="card-title">总体督学反馈</div>
+                                            <button id="copyBtn" class="copy-btn" type="button"><span class="btn-icon">⧉</span><span>复制</span></button>
+                                        </div>
                                         <div id="previewContent" class="preview-box"></div>
-                                        <button id="copyBtn" class="copy-btn" type="button">复制</button>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="footer-action">
                                 <div class="dual-actions">
-                                    <button id="regenerateBtn" class="outline-btn large-btn" type="button">重新生成</button>
-                                    <button id="acceptBtn" class="gradient-btn large-btn" type="button">采纳到正文</button>
+                                    <button id="regenerateBtn" class="outline-btn large-btn" type="button"><span class="btn-icon">↻</span><span>重新生成</span></button>
+                                    <button id="acceptBtn" class="gradient-btn large-btn" type="button"><span class="btn-icon">✓</span><span>采纳到正文</span></button>
                                 </div>
                             </div>
                         </div>
 
                         <div id="drawerLoading" class="loading-shell">
-                            <div class="skeleton" style="width:48%;"></div>
-                            <div class="skeleton" style="width:100%;"></div>
-                            <div class="skeleton" style="width:92%;"></div>
-                            <div class="skeleton large"></div>
-                            <div class="skeleton" style="width:88%;"></div>
-                            <div class="skeleton" style="width:96%;"></div>
+                            <div class="loading-center">
+                                <div class="loading-ring"></div>
+                                <div class="loading-copy">AI正在生成督学反馈</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1090,6 +1170,7 @@ Physics Lab Report</textarea>
                 assistantOpen: false,
                 assistantStep: 'form',
                 isGenerating: false,
+                basicInfoCollapsed: false,
                 generatedContent: '',
                 toastTimer: null,
                 lastResponse: ''
@@ -1243,6 +1324,13 @@ Physics Lab Report</textarea>
                 $('roInspectContent').textContent = form.inspectContent || '--';
                 $('roCompletionOverview').textContent = buildCompletionText(form) || '暂无已填写完成情况';
                 updateRequestPreview();
+            }
+
+            function renderBasicInfoCollapse() {
+                var collapsed = state.basicInfoCollapsed;
+                $('basicInfoContent').classList.toggle('hidden', collapsed);
+                $('toggleBasicInfoBtn').classList.toggle('collapsed', collapsed);
+                $('basicInfoToggleText').textContent = collapsed ? '展开' : '收起';
             }
 
             function buildWorkflowPayload() {
@@ -1411,8 +1499,9 @@ Physics Lab Report</textarea>
                 $('assistantFormScreen').classList.toggle('hidden', state.assistantStep !== 'form' || isLoading);
                 $('assistantPreviewScreen').classList.toggle('hidden', state.assistantStep !== 'preview' || isLoading);
                 $('drawerLoading').classList.toggle('active', isLoading);
-                $('assistantSubTitle').textContent = isLoading ? '生成中' : (state.assistantStep === 'form' ? '信息完善阶段' : '内容生成阶段');
+                $('assistantSubTitle').textContent = isLoading ? 'AI正在生成督学反馈' : (state.assistantStep === 'form' ? '信息完善阶段' : '内容生成阶段');
                 $('previewContent').textContent = state.generatedContent;
+                renderBasicInfoCollapse();
             }
 
             function openAssistant() {
@@ -1448,8 +1537,10 @@ Physics Lab Report</textarea>
 
                 state.isGenerating = true;
                 var button = $('generateBtn');
-                button.textContent = '生成中...';
                 button.disabled = true;
+                $('generateBtnIcon').className = 'btn-spinner';
+                $('generateBtnIcon').textContent = '';
+                $('generateBtnText').textContent = 'AI正在生成督学反馈';
                 setRequestStatus('调用中...', 'loading');
                 updateRequestPreview();
                 renderAssistantStep();
@@ -1525,8 +1616,10 @@ Physics Lab Report</textarea>
                     showToast((error && error.message) ? error.message : '调用失败，请稍后重试');
                 } finally {
                     state.isGenerating = false;
-                    button.textContent = '生成督学反馈';
                     button.disabled = false;
+                    $('generateBtnIcon').className = 'btn-icon';
+                    $('generateBtnIcon').textContent = '⚡';
+                    $('generateBtnText').textContent = '生成督学反馈';
                     renderAssistantStep();
                 }
             }
@@ -1558,6 +1651,10 @@ Physics Lab Report</textarea>
             });
             $('switchWeb').addEventListener('click', function () {
                 applyViewMode('web');
+            });
+            $('toggleBasicInfoBtn').addEventListener('click', function () {
+                state.basicInfoCollapsed = !state.basicInfoCollapsed;
+                renderBasicInfoCollapse();
             });
             $('generateBtn').addEventListener('click', handleGenerate);
             $('regenerateBtn').addEventListener('click', function () {
