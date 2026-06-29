@@ -55,6 +55,10 @@
             padding: 0 12px;
         }
 
+        select.select-placeholder {
+            color: #94a3b8;
+        }
+
         textarea {
             padding: 10px 12px;
             line-height: 1.7;
@@ -333,13 +337,7 @@
             padding: 24px;
         }
 
-        .admin-grid {
-            display: grid;
-            grid-template-columns: 1.08fr 0.92fr;
-            gap: 20px;
-            align-items: start;
-        }
-
+        .admin-grid,
         .admin-column {
             display: grid;
             gap: 20px;
@@ -594,6 +592,10 @@
             font-size: 14px;
             line-height: 1.95;
             white-space: pre-wrap;
+        }
+
+        textarea.preview-box {
+            resize: vertical;
         }
 
         .copy-btn {
@@ -947,32 +949,21 @@
                                     </div>
                                     <div class="field span-2">
                                         <label for="inspectContent">任务安排</label>
-                                        <textarea id="inspectContent" rows="4">Advanced Calculus Ch. 4
-Physics Lab Report</textarea>
+                                        <textarea id="inspectContent" rows="4">自由安排</textarea>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="section-card">
-                                <div class="summary-head">
-                                    <h3 style="margin:0;">总体督学反馈</h3>
-                                    <button id="openAssistantBtn" class="gradient-btn small-btn"><span class="btn-icon">✦</span><span>AI生成反馈</span></button>
-                                </div>
-                                <textarea id="overallFeedback" class="summary-box" rows="8" placeholder="这里显示最终采纳后的总体督学反馈"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="admin-column">
-                            <div class="section-card">
                                 <h3>任务完成情况</h3>
                                 <div class="checklist-bar">
                                     <div class="checklist-label">完成情况：</div>
                                     <label class="check-item" for="checkWordRecitation">
-                                        <input id="checkWordRecitation" type="checkbox" data-task="wordRecitation" checked>
+                                        <input id="checkWordRecitation" type="checkbox" data-task="wordRecitation">
                                         <span>单词背诵情况</span>
                                     </label>
                                     <label class="check-item" for="checkHomeworkCompletion">
-                                        <input id="checkHomeworkCompletion" type="checkbox" data-task="homeworkCompletion">
+                                        <input id="checkHomeworkCompletion" type="checkbox" data-task="homeworkCompletion" checked>
                                         <span>作业完成情况</span>
                                     </label>
                                     <label class="check-item" for="checkQuestionPractice">
@@ -989,13 +980,13 @@ Physics Lab Report</textarea>
                                     </label>
                                 </div>
                                 <div id="taskEditorGroup">
-                                    <div class="field task-editor" data-task-editor="wordRecitation">
+                                    <div class="field task-editor hidden" data-task-editor="wordRecitation">
                                         <label for="wordRecitation">单词背诵情况</label>
                                         <textarea id="wordRecitation" rows="4" placeholder="请输入单词背诵情况">函数定义和常见公式记忆整体较扎实，少量细节表达仍需强化。</textarea>
                                     </div>
-                                    <div class="field task-editor hidden" data-task-editor="homeworkCompletion">
+                                    <div class="field task-editor" data-task-editor="homeworkCompletion">
                                         <label for="homeworkCompletion">作业完成情况</label>
-                                        <textarea id="homeworkCompletion" rows="4" placeholder="请输入作业完成情况">Advanced Calculus Chapter 4 完成度约 80%，关键题型基本覆盖。</textarea>
+                                        <textarea id="homeworkCompletion" rows="4" placeholder="请输入作业完成情况">已全部完成作业</textarea>
                                     </div>
                                     <div class="field task-editor hidden" data-task-editor="questionPractice">
                                         <label for="questionPractice">刷题情况</label>
@@ -1010,6 +1001,14 @@ Physics Lab Report</textarea>
                                         <textarea id="otherTasks" rows="3" placeholder="请输入其他学习任务">无</textarea>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="section-card">
+                                <div class="summary-head">
+                                    <h3 style="margin:0;">总体督学反馈</h3>
+                                    <button id="openAssistantBtn" class="gradient-btn small-btn"><span class="btn-icon">✦</span><span>AI生成反馈</span></button>
+                                </div>
+                                <textarea id="overallFeedback" class="summary-box" rows="8" placeholder="这里显示最终采纳后的总体督学反馈"></textarea>
                             </div>
                         </div>
                     </div>
@@ -1043,7 +1042,7 @@ Physics Lab Report</textarea>
                                         <div class="card-title-row">
                                             <div class="card-title">获取到的基本信息</div>
                                             <button id="toggleBasicInfoBtn" class="text-btn" type="button">
-                                                <span id="basicInfoToggleText">收起</span>
+                                                <span id="basicInfoToggleText">展开</span>
                                                 <span class="collapse-icon">▾</span>
                                             </button>
                                         </div>
@@ -1055,10 +1054,6 @@ Physics Lab Report</textarea>
                                             <div class="readonly-row">
                                                 <div class="readonly-label">督学时间</div>
                                                 <div id="roSupervisorDate" class="readonly-value">--</div>
-                                            </div>
-                                            <div class="readonly-row span-2">
-                                                <div class="readonly-label">任务安排</div>
-                                                <div id="roInspectContent" class="readonly-value">--</div>
                                             </div>
                                             <div class="readonly-row span-2">
                                                 <div class="readonly-label">完成情况</div>
@@ -1073,11 +1068,11 @@ Physics Lab Report</textarea>
                                         <div class="form-grid">
                                             <div class="field">
                                                 <label for="arrivalTime">学生到达时间</label>
-                                                <input id="arrivalTime" type="time" value="10:25">
+                                                <input id="arrivalTime" type="time" value="">
                                             </div>
                                             <div class="field">
                                                 <label for="leaveTime">学生离开时间</label>
-                                                <input id="leaveTime" type="time" value="15:00">
+                                                <input id="leaveTime" type="time" value="">
                                             </div>
                                             <div class="field">
                                                 <label for="phoneStatus">手机上交情况</label>
@@ -1172,9 +1167,8 @@ Physics Lab Report</textarea>
                                     <div class="card">
                                         <div class="card-title-row">
                                             <div class="card-title">总体督学反馈</div>
-                                            <button id="copyBtn" class="copy-btn" type="button"><span class="btn-icon">⧉</span><span>复制</span></button>
                                         </div>
-                                        <div id="previewContent" class="preview-box"></div>
+                                        <textarea id="previewContent" class="preview-box" rows="12" placeholder="生成完成后，可在这里继续修改总体督学反馈内容。"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1209,7 +1203,9 @@ Physics Lab Report</textarea>
                 assistantOpen: false,
                 assistantStep: 'form',
                 isGenerating: false,
-                basicInfoCollapsed: false,
+                basicInfoCollapsed: true,
+                arrivalTouched: false,
+                leaveTouched: false,
                 generatedContent: '',
                 toastTimer: null,
                 lastResponse: ''
@@ -1289,6 +1285,32 @@ Physics Lab Report</textarea>
                 };
             }
 
+            function parseSupervisorRange(supervisorDate) {
+                var matches = String(supervisorDate || '').match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+                if (!matches) return null;
+                return {
+                    start: matches[1],
+                    end: matches[2]
+                };
+            }
+
+            function syncTimeDefaultsFromSupervisorDate() {
+                var range = parseSupervisorRange($('supervisorDate').value.trim());
+                if (!range) return;
+                if (!state.arrivalTouched || !$('arrivalTime').value) {
+                    $('arrivalTime').value = range.start;
+                }
+                if (!state.leaveTouched || !$('leaveTime').value) {
+                    $('leaveTime').value = range.end;
+                }
+            }
+
+            function updateSelectPlaceholderState() {
+                Array.prototype.slice.call(document.querySelectorAll('select')).forEach(function (node) {
+                    node.classList.toggle('select-placeholder', !node.value);
+                });
+            }
+
             function buildCompletionText(form) {
                 return [
                     isTaskChecked('wordRecitation') && form.wordRecitation ? '单词背诵：' + form.wordRecitation : '',
@@ -1360,7 +1382,6 @@ Physics Lab Report</textarea>
                 var form = getFormData();
                 $('roStudentName').textContent = form.studentName || '--';
                 $('roSupervisorDate').textContent = form.supervisorDate || '--';
-                $('roInspectContent').textContent = form.inspectContent || '--';
                 $('roCompletionOverview').textContent = buildCompletionText(form) || '暂无已填写完成情况';
                 updateRequestPreview();
             }
@@ -1545,9 +1566,7 @@ Physics Lab Report</textarea>
                 $('assistantPreviewScreen').classList.toggle('hidden', state.assistantStep !== 'preview' || isLoading);
                 $('drawerLoading').classList.toggle('active', isLoading);
                 $('assistantSubTitle').textContent = isLoading ? 'AI正在生成督学反馈' : (state.assistantStep === 'form' ? '信息完善阶段' : '内容生成阶段');
-                $('previewContent').textContent = state.generatedContent || '生成完成后，将在这里展示总体督学反馈正文。';
-                $('previewContent').style.color = state.generatedContent ? '#0f172a' : '#94a3b8';
-                $('copyBtn').disabled = !state.generatedContent;
+                $('previewContent').value = state.generatedContent || '';
                 renderBasicInfoCollapse();
             }
 
@@ -1671,21 +1690,8 @@ Physics Lab Report</textarea>
                 }
             }
 
-            function handleCopy() {
-                var text = state.generatedContent || '';
-                if (!text) return;
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(function () {
-                        showToast('已复制反馈内容');
-                    }).catch(function () {
-                        showToast('复制失败，请手动复制');
-                    });
-                } else {
-                    showToast('当前环境不支持自动复制');
-                }
-            }
-
             function handleAccept() {
+                state.generatedContent = $('previewContent').value.trim();
                 $('overallFeedback').value = state.generatedContent;
                 closeAssistant();
                 showToast('已采纳到正文');
@@ -1708,13 +1714,18 @@ Physics Lab Report</textarea>
                 state.assistantStep = 'form';
                 renderAssistantStep();
             });
-            $('copyBtn').addEventListener('click', handleCopy);
             $('acceptBtn').addEventListener('click', handleAccept);
+            $('previewContent').addEventListener('input', function () {
+                state.generatedContent = $('previewContent').value;
+            });
             $('workflowEndpoint').addEventListener('input', updateRequestPreview);
             $('workflowId').addEventListener('input', updateRequestPreview);
             $('parameterKey').addEventListener('input', updateRequestPreview);
             $('studentName').addEventListener('input', updateRequestPreview);
-            $('supervisorDate').addEventListener('input', updateRequestPreview);
+            $('supervisorDate').addEventListener('input', function () {
+                syncTimeDefaultsFromSupervisorDate();
+                updateRequestPreview();
+            });
             $('inspectContent').addEventListener('input', updateRequestPreview);
             $('wordRecitation').addEventListener('input', updateRequestPreview);
             $('homeworkCompletion').addEventListener('input', updateRequestPreview);
@@ -1727,18 +1738,47 @@ Physics Lab Report</textarea>
                     updateRequestPreview();
                 });
             });
-            $('arrivalTime').addEventListener('input', updateRequestPreview);
-            $('leaveTime').addEventListener('input', updateRequestPreview);
-            $('phoneStatus').addEventListener('change', updateRequestPreview);
-            $('studyLocation').addEventListener('change', updateRequestPreview);
-            $('taskCompletionStatus').addEventListener('change', updateRequestPreview);
-            $('cameraStatus').addEventListener('change', updateRequestPreview);
-            $('onlineStatus').addEventListener('change', updateRequestPreview);
-            $('learningStatus').addEventListener('change', updateRequestPreview);
-            $('cooperationStatus').addEventListener('change', updateRequestPreview);
+            $('arrivalTime').addEventListener('input', function () {
+                state.arrivalTouched = true;
+                updateRequestPreview();
+            });
+            $('leaveTime').addEventListener('input', function () {
+                state.leaveTouched = true;
+                updateRequestPreview();
+            });
+            $('phoneStatus').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
+            $('studyLocation').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
+            $('taskCompletionStatus').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
+            $('cameraStatus').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
+            $('onlineStatus').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
+            $('learningStatus').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
+            $('cooperationStatus').addEventListener('change', function () {
+                updateSelectPlaceholderState();
+                updateRequestPreview();
+            });
             $('teacherSupplement').addEventListener('input', updateRequestPreview);
             $('teacherSupplement').addEventListener('input', updateSupplementCounter);
             syncTaskEditors();
+            syncTimeDefaultsFromSupervisorDate();
+            updateSelectPlaceholderState();
             updateSupplementCounter();
             applyViewMode('web');
             updateRequestPreview();
